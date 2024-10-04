@@ -14,8 +14,26 @@ int find_closest_palette_color(int oldpixel){
     return round(((double) oldpixel) / 255);
 }
 
+int* sanityCheckArgs(int argc, char *argv[]){
+    if(argc != 3){
+        printf("Usage: ./Floyd-Steinberg <input.data> <output.pgm>\n");
+        exit(1);
+    }
+
+    FILE *f = fopen(argv[1], "r");
+    if(f == NULL){
+        printf("File %s does not exist\n", argv[1]);
+        exit(1);
+    }
+
+    fclose(f);
+
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
-    
+    sanityCheckArgs(argc, argv);
+
     //read pgm file
     FILE *f = fopen(argv[1], "r");
 
@@ -24,15 +42,23 @@ int main(int argc, char *argv[]) {
         for (int x = 0; x < X_SIZE; x++) {
             pixels[x][y] = 0;
             char c = fgetc(f);
+
+            int pixelCounter = 0;
             while(c != ' ' && c != '\n'){
                 //read in number digit by digit
                 c = atoi(&c);
                 pixels[x][y]*= 10;
                 pixels[x][y] += c;
                 c = fgetc(f);
+
+                if(pixelCounter > 3 || pixels[x][y] > 255){
+                    printf("Invalid pixel value. Please make sure the provided file was given in the correct format.\n");
+                    exit(1);
+                }
             }
         }
     }
+    fclose(f);
 
     for (int y = 1; y < Y_SIZE; y++) {
         for (int x = 0; x < X_SIZE; x++) {
