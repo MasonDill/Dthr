@@ -71,7 +71,7 @@ void writeImage(uint8_t** pixels, int x_size, int y_size, char* outputFile){
     fclose(f5);
 }
 
-int main(char* inputFile, char* outputFile, int x_size, int y_size, int passes) {
+int dither(char* inputFile, char* outputFile, int x_size, int y_size, int passes) {
     uint8_t** pixels = readImage(inputFile, x_size, y_size);
     for(int p = 0; p < passes; p++){
         floydSteinbergDither(pixels, x_size, y_size);
