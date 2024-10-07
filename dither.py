@@ -1,9 +1,15 @@
 # main.py
 import ctypes
+import platform
 import argparse
 
 # Load the shared library
-ditherlib = ctypes.CDLL('./ditherlib.so')
+if platform.system() == 'Windows':
+    ditherlib = ctypes.CDLL('./ditherlib.dll')
+elif platform.system() == 'Linux':
+    ditherlib = ctypes.CDLL('./ditherlib.so')
+else:
+    raise Exception('Unsupported platform')
 
 def parse_args():
     dither_algos = ['floyd-steinberg']
