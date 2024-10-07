@@ -1,5 +1,11 @@
-.pgm
-.jpg
-.png
-.so
-.o
+*.pgm
+*.jpg
+*.png
+*.so
+*.dll
+*.o
+/__pycache__
+/build
+/dist
+/lib
+/.vscode
