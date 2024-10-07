@@ -71,8 +71,9 @@ void writeImage(uint8_t** pixels, int x_size, int y_size, char* outputFile){
     fclose(f5);
 }
 
-int dither(char* inputFile, char* outputFile, int x_size, int y_size, int passes) {
-    uint8_t** pixels = readImage(inputFile, x_size, y_size);
+int dither(uint8_t** pixels, char* outputFile, int x_size, int y_size, int passes) {
+    //uint8_t** pixels = readImage(inputFile, x_size, y_size);
+    printf("%d", pixels[0][0]);
     for(int p = 0; p < passes; p++){
         floydSteinbergDither(pixels, x_size, y_size);
         interpolateImage(pixels, x_size, y_size);
@@ -80,4 +81,19 @@ int dither(char* inputFile, char* outputFile, int x_size, int y_size, int passes
     writeImage(pixels, x_size, y_size, outputFile);
 
     return 0;
+}
+
+uint8_t** allocatePixels(int width, int height) {
+    uint8_t** pixels = malloc(height * sizeof(uint8_t*));
+    for (int i = 0; i < height; i++) {
+        pixels[i] = malloc(width * sizeof(uint8_t));
+    }
+    return pixels;
+}
+
+void freePixels(uint8_t** pixels, int height) {
+    for (int i = 0; i < height; i++) {
+        free(pixels[i]);
+    }
+    free(pixels);
 }

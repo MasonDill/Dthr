@@ -24,7 +24,7 @@ def parse_args():
     return parser.parse_args()
 
 if __name__ == '__main__':
-    from pgmify import pgmToDataFile, scrapePgmMetadata
+    from pgmify import pgmToArr, scrapePgmMetadata
     args = parse_args()
 
     if(args.verbose):
@@ -34,10 +34,13 @@ if __name__ == '__main__':
         print("Dithering algorithm: " + args.algo)
 
     width, height = scrapePgmMetadata(args.input)
-    pgmToDataFile(args.input, './temp/temp.txt')
+    pixels = pgmToArr(args.input)
 
-    # convert to c-compatible strings
-    input_file_c = ctypes.c_char_p(b"./temp/temp.txt")
+    # convert to c-compatible types
     output_file_c = ctypes.c_char_p(args.output.encode('utf-8'))
+    pixels_c = (ctypes.POINTER(ctypes.c_uint8) * height)()
+    for i in range(height):
+        row_array = (ctypes.c_uint8 * width)(*pixels[i])
+        pixels_c[i] = row_array
     
-    ditherlib.dither(input_file_c, output_file_c, width, height, args.passes, args.verbose)
+    ditherlib.dither(pixels_c, output_file_c, width, height, args.passes, args.verbose)
