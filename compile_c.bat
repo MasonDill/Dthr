@@ -1,1 +1,1 @@
-gcc -shared -o ditherlib.so -fPIC .\Floyd_Steinberg.c
+gcc -shared -o ./lib/ditherlib.dll Floyd_Steinberg.c -m64
