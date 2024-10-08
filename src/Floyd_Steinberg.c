@@ -7,23 +7,6 @@ int find_closest_palette_color(int oldpixel){
     return round(((double) oldpixel) / 255);
 }
 
-uint8_t** readImage(char* inputFile, int x_size, int y_size){
-    uint8_t** pixels = (uint8_t**)malloc(y_size * sizeof(uint8_t*));
-
-    FILE *f = fopen(inputFile, "r");
-    for (int y = 0; y < y_size; y++) {
-        pixels[y] = (uint8_t*)malloc(x_size * sizeof(uint8_t));
-        for (int x = 0; x < x_size; x++) {
-            int pixel;
-            fscanf(f, "%d", &pixel);
-            pixels[y][x] = pixel;
-        }
-    }
-    fclose(f);
-
-    return pixels;
-}
-
 void floydSteinbergDither(uint8_t** pixels, int x_size, int y_size){
     for (int y = 1; y < y_size; y++) {
         for (int x = 0; x < x_size; x++) {
@@ -81,14 +64,6 @@ int dither(uint8_t** pixels, char* outputFile, int x_size, int y_size, int passe
     writeImage(pixels, x_size, y_size, outputFile);
 
     return 0;
-}
-
-uint8_t** allocatePixels(int width, int height) {
-    uint8_t** pixels = malloc(height * sizeof(uint8_t*));
-    for (int i = 0; i < height; i++) {
-        pixels[i] = malloc(width * sizeof(uint8_t));
-    }
-    return pixels;
 }
 
 void freePixels(uint8_t** pixels, int height) {

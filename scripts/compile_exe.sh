@@ -1,2 +1,2 @@
 cd ../
-pyinstaller --onefile --add-data "../lib/ditherlib.so:./build" --specpath ./build ./src/dither.py
+pyinstaller --onefile --add-data "../lib/ditherlib.so:./build" --specpath ./build ./src/dither.py --name dthr

@@ -24,7 +24,7 @@ def parse_args():
     return parser.parse_args()
 
 if __name__ == '__main__':
-    from pgmify import pgmToArr, scrapePgmMetadata
+    from pgmify import readpgm
     args = parse_args()
 
     if(args.verbose):
@@ -33,8 +33,7 @@ if __name__ == '__main__':
         print("Number of passes: " + str(args.passes))
         print("Dithering algorithm: " + args.algo)
 
-    width, height = scrapePgmMetadata(args.input)
-    pixels = pgmToArr(args.input)
+    pixels, width, height = readpgm(args.input)
 
     # convert to c-compatible types
     output_file_c = ctypes.c_char_p(args.output.encode('utf-8'))
