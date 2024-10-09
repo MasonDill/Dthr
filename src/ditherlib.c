@@ -125,7 +125,6 @@ void writeImage(uint8_t** pixels, int x_size, int y_size, char* outputFile){
 
 int itterativeDither(uint8_t** pixels, char* outputFile, int x_size, int y_size, int passes, enum DitherAlgorithm algorithm){
     //uint8_t** pixels = readImage(inputFile, x_size, y_size);
-    printf("%d", pixels[0][0]);
     for(int p = 0; p < passes; p++){
         dither(pixels, x_size, y_size, algorithm);
         interpolateImage(pixels, x_size, y_size);

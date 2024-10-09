@@ -11,9 +11,9 @@ elif platform.system() == 'Linux':
 else:
     raise Exception('Unsupported platform')
 
-def parse_args():
-    dither_algos = ['floyd-steinberg']
+dither_algos = ['floyd-steinberg', 'atkinson']
 
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('input', help='Input image')
     parser.add_argument('output', help='Output image')
@@ -41,5 +41,6 @@ if __name__ == '__main__':
     for i in range(height):
         row_array = (ctypes.c_uint8 * width)(*pixels[i])
         pixels_c[i] = row_array
-    
-    ditherlib.dither(pixels_c, output_file_c, width, height, args.passes, args.verbose)
+
+    algo = dither_algos.index(args.algo)
+    ditherlib.itterativeDither(pixels_c, output_file_c, width, height, args.passes, algo)
