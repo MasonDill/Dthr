@@ -57,7 +57,21 @@ void atkinsonDither(uint8_t** pixels, int y, int x, int y_size, int x_size, uint
     }
 }
 
-void dither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgorithm algorithm){
+void errorDiffusionDither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgorithm algorithm){
+    void (*ditherFunction)(uint8_t**, int, int, int, int, uint8_t);
+
+    switch(algorithm){
+        case FLOYD_STEINBERG:
+            ditherFunction = floydSteinbergDither;
+            break;
+        case ATKINSON:
+            ditherFunction = atkinsonDither;
+            break;
+        default:
+            printf("Invalid dithering algorithm\n");
+            return;
+    }
+
     for (int y = 1; y < y_size; y++) {
         for (int x = 0; x < x_size; x++) {
             uint8_t oldpixel = pixels[y][x];
@@ -65,14 +79,7 @@ void dither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgorithm algor
             uint8_t quant_error = oldpixel - newpixel;
             pixels[y][x] = newpixel;
 
-            switch(algorithm){
-                case FLOYD_STEINBERG:
-                    floydSteinbergDither(pixels, y, x, y_size, x_size, quant_error);
-                    break;
-                case ATKINSON:
-                    atkinsonDither(pixels, y, x, y_size, x_size, quant_error);
-                    break;
-            }
+            ditherFunction(pixels, y, x, y_size, x_size, quant_error);
         }
     }
 }
@@ -100,7 +107,7 @@ void writeImage(uint8_t** pixels, int x_size, int y_size, char* outputFile){
 int itterativeDither(uint8_t** pixels, char* outputFile, int x_size, int y_size, int passes, enum DitherAlgorithm algorithm){
     //uint8_t** pixels = readImage(inputFile, x_size, y_size);
     for(int p = 0; p < passes; p++){
-        dither(pixels, x_size, y_size, algorithm);
+        errorDiffusionDither(pixels, x_size, y_size, algorithm);
         interpolateImage(pixels, x_size, y_size);
     }
     writeImage(pixels, x_size, y_size, outputFile);
