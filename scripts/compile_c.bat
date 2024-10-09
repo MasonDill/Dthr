@@ -1,1 +1,1 @@
-gcc -shared -o ../lib/ditherlib.dll ../src/Floyd_Steinberg.c -m64
+gcc -shared -o ../lib/ditherlib.dll ../src/ditherlib.c -m64
