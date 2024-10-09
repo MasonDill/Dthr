@@ -55,32 +55,6 @@ void atkinsonDither(uint8_t** pixels, int y, int x, int y_size, int x_size, uint
     if(x >= 1 && y < y_size - 1){
         pixels[y + 1][x - 1] += quant_error * 1 / 8;
     }
-
-    // Left neighbours
-    if(x >= 2){
-        pixels[y][x - 2] += quant_error * 1 / 8;
-    }
-    if(x >= 1){
-        pixels[y][x - 1] += quant_error * 1 / 8;
-    }
-
-    // Top Left neighbours
-    if(x >= 1 && y >= 1){
-        pixels[y - 1][x - 1] += quant_error * 1 / 8;
-    }
-
-    // Top neighbours
-    if(y >= 2){
-        pixels[y - 2][x] += quant_error * 1 / 8;
-    }
-    if(y >= 1){
-        pixels[y - 1][x] += quant_error * 1 / 8;
-    }
-
-    // Top Right neighbours
-    if(x < x_size-1 && y >= 1){
-        pixels[y - 1][x + 1] += quant_error * 1 / 8;
-    }
 }
 
 void dither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgorithm algorithm){
