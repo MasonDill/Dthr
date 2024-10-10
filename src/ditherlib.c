@@ -91,7 +91,7 @@ void errorDiffusionDither(uint8_t** pixels, int x_size, int y_size, enum DitherA
     for (int y = 1; y < y_size; y++) {
         for (int x = 0; x < x_size; x++) {
             uint8_t oldpixel = pixels[y][x];
-            uint8_t newpixel = find_closest_palette_color(oldpixel, 128);
+            uint8_t newpixel = find_closest_palette_color(oldpixel, 255/2);
             uint8_t quant_error = oldpixel - newpixel;
             pixels[y][x] = newpixel;
 
@@ -123,9 +123,9 @@ uint8_t** halfToneMapTile(){
 
         for (int j = 0; j < MAP_X_SIZE; j++) {
             if(i > 1 && i < 3 && j > 1 && j < 3){
-                map[i][j] = 128;
-            } else {
                 map[i][j] = 255;
+            } else {
+                map[i][j] = 127;
             }
         }
     }
@@ -166,7 +166,7 @@ void orderedDither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgorith
     for (int y = 0; y < y_size; y++) {
         for (int x = 0; x < x_size; x++) {
             int threshold = map[y % MAP_Y_SIZE][x % MAP_X_SIZE];
-            pixels[y][x] = find_closest_palette_color(pixels[y][x], threshold);
+            pixels[y][x] = !find_closest_palette_color(pixels[y][x], threshold);
         }
     }
 }
@@ -192,16 +192,12 @@ void writeImage(uint8_t** pixels, int x_size, int y_size, char* outputFile){
 }
 
 enum DitherType getDitherType(enum DitherAlgorithm algorithm){
-    for(int i = 0; i < sizeof(errorDiffusionAlgorithms) / sizeof(enum DitherAlgorithm); i++){
-        if(algorithm == errorDiffusionAlgorithms[i]){
-            return ERROR_DIFFUSION;
-        }
-    }
-
-    for(int i = 0; i < sizeof(orderedDitherAlgorithms) / sizeof(enum DitherAlgorithm); i++){
-        if(algorithm == orderedDitherAlgorithms[i]){
-            return ORDERED_DITHER;
-        }
+    if(algorithm == FLOYD_STEINBERG || algorithm == ATKINSON){
+        return ERROR_DIFFUSION;
+    } else if(algorithm == BLACK_WHITE || algorithm == HALF_TONE){
+        return ORDERED_DITHER;
+    } else {
+        return -1;
     }
 
     return -1;
