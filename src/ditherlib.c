@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdbool.h>
 
 enum DitherType {
     ERROR_DIFFUSION,
@@ -171,10 +172,11 @@ void orderedDither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgorith
     }
 }
 
-void interpolateImage(uint8_t** pixels, int x_size, int y_size){
+void interpolateImage(uint8_t** pixels, int x_size, int y_size, bool negate){
     for (int y = 0; y < y_size; y++) {
         for (int x = 0; x < x_size; x++) {
-            pixels[y][x] += 255;
+            pixels[y][x] = negate ? !pixels[y][x] : pixels[y][x];
+            pixels[y][x] -= 1; // change codomain from [0, 1] to [255, 0]
         }
     }
 }
@@ -203,7 +205,7 @@ enum DitherType getDitherType(enum DitherAlgorithm algorithm){
     return -1;
 }
 
-int itterativeDither(uint8_t** pixels, char* outputFile, int x_size, int y_size, int passes, enum DitherAlgorithm algorithm){
+int itterativeDither(uint8_t** pixels, char* outputFile, int x_size, int y_size, int passes, enum DitherAlgorithm algorithm, bool negate){
     void (*ditherAlgoFunction)(uint8_t**, int, int, enum DitherAlgorithm);
     switch(getDitherType(algorithm)){
         case ERROR_DIFFUSION:
@@ -220,7 +222,7 @@ int itterativeDither(uint8_t** pixels, char* outputFile, int x_size, int y_size,
     //uint8_t** pixels = readImage(inputFile, x_size, y_size);
     for(int p = 0; p < passes; p++){
         ditherAlgoFunction(pixels, x_size, y_size, algorithm);
-        interpolateImage(pixels, x_size, y_size);
+        interpolateImage(pixels, x_size, y_size, negate);
     }
     writeImage(pixels, x_size, y_size, outputFile);
 

@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument('output', help='Output image')
 
     parser.add_argument('-p', '--passes', help='Number of passes', type=int, default=1)
+    parser.add_argument('-n', '--negate', help='Negate image', action='store_true')
     parser.add_argument('-a', '--algo', help='Dithering algorithm', choices=dither_algos, default=dither_algos[0])
     parser.add_argument('-v', '--verbose', help='Verbose output', action='store_true')
     return parser.parse_args()
@@ -43,4 +44,4 @@ if __name__ == '__main__':
         pixels_c[i] = row_array
 
     algo = dither_algos.index(args.algo)
-    ditherlib.itterativeDither(pixels_c, output_file_c, width, height, args.passes, algo)
+    ditherlib.itterativeDither(pixels_c, output_file_c, width, height, args.passes, algo, args.negate)
