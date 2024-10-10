@@ -11,7 +11,7 @@ elif platform.system() == 'Linux':
 else:
     raise Exception('Unsupported platform')
 
-dither_algos = ['floyd-steinberg', 'atkinson']
+dither_algos = ['floyd-steinberg', 'atkinson', 'black-white', 'half-tone']
 
 def parse_args():
     parser = argparse.ArgumentParser()
