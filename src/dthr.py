@@ -34,7 +34,10 @@ if __name__ == '__main__':
         print("Number of passes: " + str(args.passes))
         print("Dithering algorithm: " + args.algo)
 
-    pixels, width, height = readpgm(args.input)
+    pixels, width, height, depth = readpgm(args.input)
+
+    if(args.verbose):
+        print("Image dimensions: " + str(width) + "x" + str(height) + "x" + str(depth))
 
     # convert to c-compatible types
     output_file_c = ctypes.c_char_p(args.output.encode('utf-8'))
