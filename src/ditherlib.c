@@ -1,23 +1,33 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <math.h>
 #include <stdbool.h>
+#include <string.h>
 
-enum DitherType {
-    ERROR_DIFFUSION,
-    ORDERED_DITHER
-};
-
-enum DitherAlgorithm {
+enum DitherAlgo {
     FLOYD_STEINBERG,
     ATKINSON,
     BLACK_WHITE,
     HALF_TONE
 };
 
-enum DitherAlgorithm errorDiffusionAlgorithms[] = {FLOYD_STEINBERG, ATKINSON};
-enum DitherAlgorithm orderedDitherAlgorithms[] = {BLACK_WHITE, HALF_TONE};
+enum DitherType {
+    ERROR_DIFFUSION,
+    ORDERED_DITHER
+};
+
+struct DitheringAlgorithm {
+    enum DitherAlgo algorithm;
+    enum DitherType type;
+    char* name;
+};
+
+struct DitheringAlgorithm ditheringAlgorithms[] = {
+    {FLOYD_STEINBERG, ERROR_DIFFUSION, "floyd-steinberg"},
+    {ATKINSON, ERROR_DIFFUSION, "atkinson"},
+    {BLACK_WHITE, ORDERED_DITHER, "black-white"},
+    {HALF_TONE, ORDERED_DITHER, "half-tone"}
+};
 
 int find_closest_palette_color(int oldpixel, int threshold) {
     //compare to threshold
@@ -74,7 +84,7 @@ void atkinsonDither(uint8_t** pixels, int y, int x, int y_size, int x_size, uint
     }
 }
 
-void errorDiffusionDither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgorithm algorithm){
+void errorDiffusionDither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgo algorithm){
     void (*ditherDiffusionFunction)(uint8_t**, int, int, int, int, uint8_t);
 
     switch(algorithm){
@@ -85,7 +95,7 @@ void errorDiffusionDither(uint8_t** pixels, int x_size, int y_size, enum DitherA
             ditherDiffusionFunction = atkinsonDither;
             break;
         default:
-            printf("Invalid dithering algorithm\n");
+            printf("Invalid error diffusion algorithm\n");
             return;
     }
 
@@ -134,19 +144,19 @@ uint8_t** halfToneMapTile(){
     return map;
 }
 
-uint8_t** createThresholdMapTile(enum DitherAlgorithm algorithm){
+uint8_t** createThresholdMapTile(enum DitherAlgo algorithm){
     switch(algorithm){
         case BLACK_WHITE:
             return blackWhiteMapTile();
         case HALF_TONE:
             return halfToneMapTile();
         default:
-            printf("Invalid dithering algorithm\n");
+            printf("Invalid ordered dithering algorithm\n");
             return NULL;
     }
 }
 
-uint8_t** createThresholdMap(enum DitherAlgorithm algorithm, int x_size, int y_size){
+uint8_t** createThresholdMap(enum DitherAlgo algorithm, int x_size, int y_size){
     uint8_t** map = (uint8_t**) malloc(y_size * sizeof(uint8_t*));
     uint8_t** tile = createThresholdMapTile(algorithm);
 
@@ -161,7 +171,7 @@ uint8_t** createThresholdMap(enum DitherAlgorithm algorithm, int x_size, int y_s
     return map;
 }
 
-void orderedDither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgorithm algorithm){
+void orderedDither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgo algorithm){
     uint8_t** map = createThresholdMap(algorithm, x_size, y_size);
 
     for (int y = 0; y < y_size; y++) {
@@ -193,21 +203,23 @@ void writeImage(uint8_t** pixels, int x_size, int y_size, char* outputFile){
     fclose(f5);
 }
 
-enum DitherType getDitherType(enum DitherAlgorithm algorithm){
-    if(algorithm == FLOYD_STEINBERG || algorithm == ATKINSON){
-        return ERROR_DIFFUSION;
-    } else if(algorithm == BLACK_WHITE || algorithm == HALF_TONE){
-        return ORDERED_DITHER;
-    } else {
-        return -1;
+struct DitheringAlgorithm getDitheringAlgorithm(char* algorithm){
+    for(int i = 0; i < sizeof(ditheringAlgorithms)/sizeof(ditheringAlgorithms[0]); i++){
+        if(strcmp(ditheringAlgorithms[i].name, algorithm) == 0){
+            return ditheringAlgorithms[i];
+        }
     }
 
-    return -1;
+    // Not found
+    struct DitheringAlgorithm error = {-1, -1, "ERROR"};
+    return error;
 }
 
-int itterativeDither(uint8_t** pixels, char* outputFile, int x_size, int y_size, int passes, enum DitherAlgorithm algorithm, bool negate){
-    void (*ditherAlgoFunction)(uint8_t**, int, int, enum DitherAlgorithm);
-    switch(getDitherType(algorithm)){
+int itterativeDither(uint8_t** pixels, char* outputFile, int x_size, int y_size, int passes, char* algorithm, bool negate){
+    void (*ditherAlgoFunction)(uint8_t**, int, int, enum DitherAlgo);
+
+    struct DitheringAlgorithm ditheringAlgorithm = getDitheringAlgorithm(algorithm);
+    switch(ditheringAlgorithm.type){
         case ERROR_DIFFUSION:
             ditherAlgoFunction = errorDiffusionDither;
             break;
@@ -221,7 +233,7 @@ int itterativeDither(uint8_t** pixels, char* outputFile, int x_size, int y_size,
 
     //uint8_t** pixels = readImage(inputFile, x_size, y_size);
     for(int p = 0; p < passes; p++){
-        ditherAlgoFunction(pixels, x_size, y_size, algorithm);
+        ditherAlgoFunction(pixels, x_size, y_size, ditheringAlgorithm.algorithm);
         interpolateImage(pixels, x_size, y_size, negate);
     }
     writeImage(pixels, x_size, y_size, outputFile);

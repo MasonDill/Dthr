@@ -41,10 +41,10 @@ if __name__ == '__main__':
 
     # convert to c-compatible types
     output_file_c = ctypes.c_char_p(args.output.encode('utf-8'))
+    algo = ctypes.c_char_p(args.algo.encode('utf-8'))
     pixels_c = (ctypes.POINTER(ctypes.c_uint8) * height)()
     for i in range(height):
         row_array = (ctypes.c_uint8 * width)(*pixels[i])
         pixels_c[i] = row_array
 
-    algo = dither_algos.index(args.algo)
     ditherlib.itterativeDither(pixels_c, output_file_c, width, height, args.passes, algo, args.negate)
