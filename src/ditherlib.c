@@ -119,7 +119,7 @@ const uint8_t MAP_Y_SIZE = 4;
 
 uint8_t** blackWhiteMapTile(){
     uint8_t** map = (uint8_t**) malloc(MAP_Y_SIZE * sizeof(uint8_t*));
-    for (int i = 0; i < MAP_X_SIZE; i++) {
+    for (int i = 0; i < MAP_Y_SIZE; i++) {
         map[i] = (uint8_t*) malloc(MAP_X_SIZE * sizeof(uint8_t));
 
         for (int j = 0; j < MAP_X_SIZE; j++) {
@@ -132,7 +132,7 @@ uint8_t** blackWhiteMapTile(){
 
 uint8_t** halfToneMapTile(){
     uint8_t** map = (uint8_t**) malloc(MAP_Y_SIZE * sizeof(uint8_t*));
-    for (int i = 0; i < MAP_X_SIZE; i++) {
+    for (int i = 0; i < MAP_Y_SIZE; i++) {
         map[i] = (uint8_t*) malloc(MAP_X_SIZE * sizeof(uint8_t));
 
         for (int j = 0; j < MAP_X_SIZE; j++) {
@@ -163,7 +163,7 @@ uint8_t** createThresholdMap(enum DitherAlgo algorithm, int x_size, int y_size){
     uint8_t** map = (uint8_t**) malloc(y_size * sizeof(uint8_t*));
     uint8_t** tile = createThresholdMapTile(algorithm);
 
-    // Repeat the tile over the whole image
+    // Repeat the tile over the whole image space
     for (int i = 0; i < y_size; i++) {
         map[i] = (uint8_t*) malloc(x_size * sizeof(uint8_t));
 
