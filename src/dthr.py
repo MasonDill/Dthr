@@ -4,12 +4,13 @@ import platform
 import argparse
 
 # Load the shared library
-if platform.system() == 'Windows':
-    ditherlib = ctypes.CDLL('./lib/ditherlib.dll')
-elif platform.system() == 'Linux':
-    ditherlib = ctypes.CDLL('./lib/ditherlib.so')
-else:
-    raise Exception('Unsupported platform')
+match platform.system():
+    case 'Windows':
+        ditherlib = ctypes.CDLL('./lib/ditherlib.dll')
+    case 'Linux':
+        ditherlib = ctypes.CDLL('./lib/ditherlib.so')
+    case _:
+        raise Exception('Unsupported platform')
 
 dither_algos = ['floyd-steinberg', 'atkinson', 'black-white', 'half-tone']
 
@@ -28,17 +29,15 @@ if __name__ == '__main__':
     from pgmify import readpgm
     args = parse_args()
 
-    if(args.verbose):
-        print("Input file: " + args.input)
-        print("Output file: " + args.output)
-        print("Number of passes: " + str(args.passes))
-        print("Dithering algorithm: " + args.algo)
-
     pixels, width, height, depth = readpgm(args.input)
 
     if(args.verbose):
         print("Image dimensions: " + str(width) + "x" + str(height) + "x" + str(depth))
-
+        print("Input file: " + args.input)
+        print("Output file: " + args.output)
+        print("Number of passes: " + str(args.passes))
+        print("Dithering algorithm: " + args.algo)
+        
     # convert to c-compatible types
     output_file_c = ctypes.c_char_p(args.output.encode('utf-8'))
     algo = ctypes.c_char_p(args.algo.encode('utf-8'))

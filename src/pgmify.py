@@ -32,9 +32,10 @@ def readpgm(name):
     if pgm_header not in PGM_TYPES:
         raise ValueError("Only P2 and P5 pgm file formats are supported")
 
-    description = pgmf.readline()
-    if not b'#' in description:
-        (width, height) = [int(i) for i in description.split()]
+    # may or may not have a comment
+    comment = pgmf.readline()
+    if not b'#' in comment:
+        (width, height) = [int(i) for i in comment.split()]
     else:
         (width, height) = [int(i) for i in pgmf.readline().split()]
     

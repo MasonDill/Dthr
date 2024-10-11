@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <string.h>
 
+const uint8_t BLACK = 0;
+const uint8_t WHITE = 255;
+
 enum DitherAlgo {
     FLOYD_STEINBERG,
     ATKINSON,
@@ -31,7 +34,7 @@ struct DitheringAlgorithm ditheringAlgorithms[] = {
 
 int find_closest_palette_color(int oldpixel, int threshold) {
     //compare to threshold
-    return oldpixel > threshold ? 1 : 0;
+    return oldpixel > threshold ? WHITE : BLACK;
 }
 
 void floydSteinbergDither(uint8_t** pixels, int y, int x, int y_size, int x_size, uint8_t quant_error){
@@ -102,7 +105,7 @@ void errorDiffusionDither(uint8_t** pixels, int x_size, int y_size, enum DitherA
     for (int y = 1; y < y_size; y++) {
         for (int x = 0; x < x_size; x++) {
             uint8_t oldpixel = pixels[y][x];
-            uint8_t newpixel = find_closest_palette_color(oldpixel, 255/2);
+            uint8_t newpixel = find_closest_palette_color(oldpixel, WHITE/2);
             uint8_t quant_error = oldpixel - newpixel;
             pixels[y][x] = newpixel;
 
@@ -117,10 +120,10 @@ const uint8_t MAP_Y_SIZE = 4;
 uint8_t** blackWhiteMapTile(){
     uint8_t** map = (uint8_t**) malloc(MAP_Y_SIZE * sizeof(uint8_t*));
     for (int i = 0; i < MAP_X_SIZE; i++) {
-        map[i] = (uint8_t*) malloc(MAP_X_SIZE * sizeof(uint8_t)); // allocate
+        map[i] = (uint8_t*) malloc(MAP_X_SIZE * sizeof(uint8_t));
 
         for (int j = 0; j < MAP_X_SIZE; j++) {
-            map[i][j] = 128; // assign
+            map[i][j] = WHITE/2;
         }
     }
 
@@ -130,13 +133,13 @@ uint8_t** blackWhiteMapTile(){
 uint8_t** halfToneMapTile(){
     uint8_t** map = (uint8_t**) malloc(MAP_Y_SIZE * sizeof(uint8_t*));
     for (int i = 0; i < MAP_X_SIZE; i++) {
-        map[i] = (uint8_t*) malloc(MAP_X_SIZE * sizeof(uint8_t)); // allocate
+        map[i] = (uint8_t*) malloc(MAP_X_SIZE * sizeof(uint8_t));
 
         for (int j = 0; j < MAP_X_SIZE; j++) {
             if(i > 1 && i < 3 && j > 1 && j < 3){
-                map[i][j] = 255;
+                map[i][j] = WHITE; // insurpassable threshold -> output pixel always black
             } else {
-                map[i][j] = 127;
+                map[i][j] = WHITE/2;
             }
         }
     }
@@ -160,6 +163,7 @@ uint8_t** createThresholdMap(enum DitherAlgo algorithm, int x_size, int y_size){
     uint8_t** map = (uint8_t**) malloc(y_size * sizeof(uint8_t*));
     uint8_t** tile = createThresholdMapTile(algorithm);
 
+    // Repeat the tile over the whole image
     for (int i = 0; i < y_size; i++) {
         map[i] = (uint8_t*) malloc(x_size * sizeof(uint8_t));
 
@@ -172,12 +176,13 @@ uint8_t** createThresholdMap(enum DitherAlgo algorithm, int x_size, int y_size){
 }
 
 void orderedDither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgo algorithm){
+    // creates a threshold map that is the same size as the image
     uint8_t** map = createThresholdMap(algorithm, x_size, y_size);
 
     for (int y = 0; y < y_size; y++) {
         for (int x = 0; x < x_size; x++) {
             int threshold = map[y % MAP_Y_SIZE][x % MAP_X_SIZE];
-            pixels[y][x] = !find_closest_palette_color(pixels[y][x], threshold);
+            pixels[y][x] = find_closest_palette_color(pixels[y][x], threshold);
         }
     }
 }
@@ -185,16 +190,15 @@ void orderedDither(uint8_t** pixels, int x_size, int y_size, enum DitherAlgo alg
 void interpolateImage(uint8_t** pixels, int x_size, int y_size, bool negate){
     for (int y = 0; y < y_size; y++) {
         for (int x = 0; x < x_size; x++) {
-            pixels[y][x] = negate ? !pixels[y][x] : pixels[y][x];
-            pixels[y][x] -= 1; // change codomain from [0, 1] to [255, 0]
+            pixels[y][x] = negate ? ~pixels[y][x] : pixels[y][x];
         }
     }
 }
 
 void writeImage(uint8_t** pixels, int x_size, int y_size, char* outputFile){
     FILE *f5 = fopen(outputFile, "w");
-    fprintf(f5, "P2\n%d %d\n", x_size, y_size); //P2 format, dimensions
-    fprintf(f5, "255\n"); //255 bit depth
+    fprintf(f5, "P2\n%d %d\n", x_size, y_size); // P2 format, dimensions
+    fprintf(f5, "%d\n", WHITE); // bit depth
     for (int y = 0; y < y_size; y++) {
         for (int x = 0; x < x_size; x++) {
             fprintf(f5, "%d\n", pixels[y][x]);
